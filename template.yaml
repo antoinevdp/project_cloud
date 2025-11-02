@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM template for project_cloud
+
+Resources:
+  ParkingApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+
+  ApiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: api-handler
+      Description: A Lambda function that returns data from DynamoDB based on the API path.
+      CodeUri: src/project_cloud/api/
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: parkings
+        - DynamoDBCrudPolicy:
+            TableName: traffic
+      Events:
+        ParkingsApiEvent:
+          Type: Api
+          Properties:
+            Path: /parkings
+            Method: GET
+            RestApiId:
+              Ref: ParkingApi
+        TrafficApiEvent:
+          Type: Api
+          Properties:
+            Path: /traffic
+            Method: GET
+            RestApiId:
+              Ref: ParkingApi
+
+Outputs:
+  ParkingsApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage for Parkings"
+    Value: !Sub "https://${ParkingApi}.execute-api.${AWS::Region}.amazonaws.com/prod/parkings"
+  TrafficApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage for Traffic"
+    Value: !Sub "https://${ParkingApi}.execute-api.${AWS::Region}.amazonaws.com/prod/traffic"
