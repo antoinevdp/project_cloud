@@ -20,12 +20,12 @@ def replace_floats(obj):
     else:
         return obj
 
-def get_last_processed_timestamp(dynamodb, table_name):
+def get_last_processed_timestamp(dynamodb, table_name, type_table):
     table = dynamodb.Table(table_name)
     try:
         response = table.query(
             IndexName='gsi-type-ingestion_timestamp',
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('type').eq('traffic'), # Replace 'traffic' if your type is different
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('type').eq(type_table), # Replace 'traffic' if your type is different
             ScanIndexForward=False,  # Sort by ingestion_timestamp in descending order
             Limit=1,
             ProjectionExpression="ingestion_timestamp"
