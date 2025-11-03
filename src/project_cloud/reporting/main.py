@@ -10,8 +10,12 @@ s3_folder = "reporting"
 
 # DynamoDB setup
 dynamodb = boto3.resource('dynamodb')
-reporting_tables = ["aggregation_average_availability_parking", "aggregation_number_of_parkings_in_operation",
-                    "aggregation_overall_occupancy_rate", "aggregation_reference_pricing"]
+reporting_tables = [
+    "aggregation_average_availability_parking", "aggregation_number_of_parkings_in_operation",
+    "aggregation_overall_occupancy_rate", "aggregation_reference_pricing",
+    "aggregation_traffic_congestion_index","aggregation_traffic_critical_segments","aggregation_traffic_fluidity_by_zone",
+    "aggregation_departures_by_network","aggregation_departures_top_destinations","aggregation_departures_total"
+]
 
 def main():
     for table in reporting_tables:

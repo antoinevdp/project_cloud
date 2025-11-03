@@ -30,7 +30,7 @@ def get_last_ingestion_time(dynamodb, table_name, type_value):
         print("Falling back to scan operation for get_last_ingestion_time")
         response = table.scan(
             ProjectionExpression="ingestion_timestamp",
-            Limit=1000  # Adjust as needed
+            Limit=10000
         )
         timestamps = [item['ingestion_timestamp'] for item in response['Items']]
         return max(timestamps) if timestamps else None
@@ -52,6 +52,29 @@ def get_items_by_ingestion_time(dynamodb, table_name, ingestion_time, type_value
         )
         return response.get('Items', [])
 
+def get_all_items(dynamodb, table_name):
+    table = dynamodb.Table(table_name)
+    items = []
+    try:
+        scan_kwargs = {}
+
+        done = False
+        start_key = None
+        while not done:
+            if start_key:
+                scan_kwargs['ExclusiveStartKey'] = start_key
+            
+            response = table.scan(**scan_kwargs)
+            items.extend(response.get('Items', []))
+            start_key = response.get('LastEvaluatedKey', None)
+            done = start_key is None
+
+        return items
+
+    except Exception as e:
+        print(f"Error getting all items with scan: {e}")
+        return []
+
 def decimal_serializer(obj):
     """JSON serializer for objects not serializable by default json code"""
     if isinstance(obj, Decimal):
@@ -65,6 +88,27 @@ def lambda_handler(event, context):
 
         path = event.get('path')
         print(f"Request path: {path}")
+
+        aggregation_tables = [
+            "aggregation_average_availability_parking", "aggregation_number_of_parkings_in_operation",
+            "aggregation_overall_occupancy_rate", "aggregation_reference_pricing",
+            "aggregation_traffic_congestion_index", "aggregation_traffic_critical_segments",
+            "aggregation_traffic_fluidity_by_zone", "aggregation_departures_by_network",
+            "aggregation_departures_top_destinations", "aggregation_departures_total"
+        ]
+        
+        table_from_path = path.lstrip('/')
+
+        if table_from_path in aggregation_tables:
+            table_name = table_from_path
+            print(f"Table name: {table_name}")
+            items = get_all_items(dynamodb, table_name)
+            print(f"Retrieved {len(items)} items.")
+            
+            return {
+                'statusCode': 200,
+                'body': json.dumps(items, default=decimal_serializer)
+            }
 
         if path == '/parkings':
             table_name = "parkings"

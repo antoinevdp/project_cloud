@@ -9,7 +9,6 @@ import os
 # Make sure to replace this with your actual API Gateway endpoint for traffic
 TRAFFIC_ENDPOINT = "https://sqrujqh495.execute-api.us-east-1.amazonaws.com/prod/traffic"
 PARKINGS_ENDPOINT = "https://sqrujqh495.execute-api.us-east-1.amazonaws.com/prod/parkings"
-DEPARTURES_ENDPOINT = "https://sqrujqh495.execute-api.us-east-1.amazonaws.com/prod/departures"
 
 load_dotenv()
 MAPBOX_API_KEY = os.getenv('MAPBOX_API_KEY')
@@ -51,7 +50,6 @@ def main():
     # --- Main App ---
     traffic_data = get_data(TRAFFIC_ENDPOINT)
     parkings_data = get_data(PARKINGS_ENDPOINT)
-    departures_data = get_data(DEPARTURES_ENDPOINT)
 
     if traffic_data:
         st.write(f"Found {len(traffic_data)} traffic segments.")
