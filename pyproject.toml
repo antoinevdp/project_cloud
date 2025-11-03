@@ -27,4 +27,5 @@ process-traffic= "project_cloud.traffic.process_s3_to_dynamodb:main"
 ingest-departures = "project_cloud.departures.main:main"
 process-departures = "project_cloud.departures.process_s3_to_dynamodb:main"
 create-reports = "project_cloud.reporting.main:main"
+process-agregation = "project_cloud.agregation.main:main"
 

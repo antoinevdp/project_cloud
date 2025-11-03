@@ -18,4 +18,7 @@ sleep 1
 echo "--- Processing Traffic Data ---"
 /home/ubuntu/.local/bin/uv run process-traffic
 
+echo "--- Processing Aggregation Data ---"
+/home/ubuntu/.local/bin/uv run process-agregation
+
 echo "Pipeline finished."
