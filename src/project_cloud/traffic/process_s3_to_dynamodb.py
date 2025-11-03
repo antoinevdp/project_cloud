@@ -18,7 +18,7 @@ dynamodb = boto3.resource('dynamodb')
 DYNAMODB_TABLE_NAME = "traffic"
 
 def main():
-    last_processed_timestamp_str = get_last_processed_timestamp(dynamodb, DYNAMODB_TABLE_NAME)
+    last_processed_timestamp_str = get_last_processed_timestamp(dynamodb, DYNAMODB_TABLE_NAME,'traffic')
 
     keys = get_s3_object_keys(s3, BUCKET_NAME, s3_folder)
 
@@ -47,6 +47,7 @@ def main():
     for key in new_keys:
         response = get_json_from_s3(s3, BUCKET_NAME, key)
         ingestion_timestamp_str = key.split('/')[1] # This is the ISO string from the S3 key
+        print(response)
         if response:
             features = response.get("features",[])
             values_list = []
