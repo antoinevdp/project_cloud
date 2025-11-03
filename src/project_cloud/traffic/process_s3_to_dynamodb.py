@@ -47,7 +47,6 @@ def main():
     for key in new_keys:
         response = get_json_from_s3(s3, BUCKET_NAME, key)
         ingestion_timestamp_str = key.split('/')[1] # This is the ISO string from the S3 key
-        print(response)
         if response:
             features = response.get("features",[])
             values_list = []

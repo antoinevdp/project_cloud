@@ -1,17 +1,17 @@
 #!/bin/bash
 
 echo "Starting the pipeline..."
-
+/home/ubuntu/.local/bin/uv sync --locked
 echo "--- Ingesting Parking Data ---"
-python -m project_cloud.parking.main
+/home/ubuntu/.local/bin/uv run ingest-parking
 
 echo "--- Processing Parking Data ---"
-python -m project_cloud.parking.process_s3_to_dynamodb
+/home/ubuntu/.local/bin/uv run process-parking
 
 echo "--- Ingesting Traffic Data ---"
-python -m project_cloud.traffic.main
+/home/ubuntu/.local/bin/uv run ingest-traffic
 
 echo "--- Processing Traffic Data ---"
-python -m project_cloud.traffic.process_s3_to_dynamodb
+/home/ubuntu/.local/bin/uv run process-traffic
 
 echo "Pipeline finished."
