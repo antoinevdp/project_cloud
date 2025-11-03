@@ -1,9 +1,19 @@
 import json
 from datetime import datetime
+from decimal import Decimal
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            if o % 1 == 0:
+                return int(o)
+            else:
+                return float(o)
+        return super(DecimalEncoder, self).default(o)
 
 def upload_to_s3(s3, json_data, bucket_name, key):
     try:
-        s3.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(json_data, indent=4))
+        s3.put_object(Bucket=bucket_name, Key=key, Body=json.dumps(json_data, indent=4, cls=DecimalEncoder))
         print(f"Uploaded {key} to {bucket_name}")
     except Exception as e:
         print(f"Error uploading to S3: {e}")

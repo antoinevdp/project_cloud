@@ -64,7 +64,7 @@ def get_all_items_by_date(dynamodb, table_name, date_str):
     items = []
     try:
         scan_kwargs = {
-            'FilterExpression': boto3.dynamodb.conditions.Attr('ingestion_timestamp').begins_with(date_str)
+            'FilterExpression': boto3.dynamodb.conditions.Attr('ingestion_datetime').begins_with(date_str)
         }
 
         done = False
