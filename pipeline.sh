@@ -1,3 +1,4 @@
+cd $HOME/project_cloud/
 #!/bin/bash
 
 echo "Starting the pipeline..."
