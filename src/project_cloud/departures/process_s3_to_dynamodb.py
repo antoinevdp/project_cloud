@@ -4,36 +4,39 @@ from datetime import datetime
 
 from project_cloud.utils.utils_dynamodb import get_last_processed_timestamp, batch_put_items_to_dynamodb
 from project_cloud.utils.utils_s3 import get_s3_object_keys, get_json_from_s3
-
 load_dotenv()
 
 # S3 setup
 s3 = boto3.client("s3")
 BUCKET_NAME = "efrei-cloud-project"
-s3_folder = "parking"
+s3_folder = "departures"
 
 # DynamoDB setup
 dynamodb = boto3.resource('dynamodb')
-DYNAMODB_TABLE_NAME = "parkings"
+DYNAMODB_TABLE_NAME = "departures"
 
-KEYS_TO_KEEP = [
-    "gid", "nom", "gestionnaire", "id_gestionnaire", "insee", "adresse", "type_usagers",
-    "gratuit", "nb_places", "nb_pr", "nb_pmr", "nb_voitures_electriques", "nb_velo",
-    "nb_2r_el", "nb_autopartage", "nb_2_rm", "nb_covoit", "tarif_pmr", "tarif_1h",
-    "tarif_2h", "tarif_3h", "tarif_4h", "tarif_24h", "abo_resident", "abo_non_resident",
-    "type_ouvrage", "info", "places_disponibles", "etat", "last_update", "the_geom","ingestion_timestamp",
-    "longitude", "latitude", "type"
-]
 
-def clean_json_data(data, keys_to_keep):
-    cleaned_data = []
-    for item in data:
-        cleaned_item = {key: item.get(key) for key in keys_to_keep}
-        cleaned_data.append(cleaned_item)
-    return cleaned_data
+def create_stations_departures_dict(json_data,ingestion_timestamp_str):
+    results = []
+    departures = json_data["departures"]
+    for index, departure in enumerate(departures):
+        result = {
+            "gid": index,
+            "trip_id": departure.get("display_informations").get("trip_short_name"),
+            "ingestion_timestamp": int(datetime.fromisoformat(ingestion_timestamp_str).timestamp() * 1_000_000),
+            "departure_datetime": departure.get("stop_date_time").get("base_departure_date_time"),
+            "departure_station": departure.get("stop_point").get("name"),
+            "arrival_station": departure.get("display_informations").get("direction"),
+            "network": departure.get("display_informations").get("network"),
+            "type": "departures",
+            "long": departure.get("stop_point",{}).get("coord").get("lon"),
+            "lat": departure.get("stop_point", {}).get("coord").get("lat"),
+        }
+        results.append(result)
+    return results
 
 def main():
-    last_processed_timestamp_str = get_last_processed_timestamp(dynamodb, DYNAMODB_TABLE_NAME,"parkings")
+    last_processed_timestamp_str = get_last_processed_timestamp(dynamodb, DYNAMODB_TABLE_NAME,"departures")
 
     keys = get_s3_object_keys(s3, BUCKET_NAME, s3_folder)
 
@@ -61,24 +64,15 @@ def main():
         response = get_json_from_s3(s3, BUCKET_NAME, key)
         ingestion_timestamp_str = key.split('/')[1]
         if response:
-            features = response.get("features",[])
-            values_list = []
-            for feature in features:
-                value = feature.get("properties",{})
-                long,lat = feature.get("geometry",{}).get("coordinates",[])
-                value["longitude"] = long
-                value["latitude"] = lat
-                value["ingestion_timestamp"] = int(datetime.fromisoformat(ingestion_timestamp_str).timestamp() * 1_000_000)
-                value["type"] = "parkings"
-                values_list.append(value)
-            cleaned_values = clean_json_data(values_list, KEYS_TO_KEEP)
-            all_items_to_put.extend(cleaned_values)
+            results = create_stations_departures_dict(response,ingestion_timestamp_str)
+            all_items_to_put.extend(results)
 
             if all_items_to_put:
                 print(f"Attempting to batch put {len(all_items_to_put)} items to {DYNAMODB_TABLE_NAME}")
                 batch_put_items_to_dynamodb(dynamodb, DYNAMODB_TABLE_NAME, all_items_to_put)
             else:
                 print("No new data to process.")
+
 
 if __name__ == "__main__":
     main()

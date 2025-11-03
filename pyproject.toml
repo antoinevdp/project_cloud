@@ -24,4 +24,6 @@ ingest-parking = "project_cloud.parking.main:main"
 process-parking = "project_cloud.parking.process_s3_to_dynamodb:main"
 ingest-traffic = "project_cloud.traffic.main:main"
 process-traffic= "project_cloud.traffic.process_s3_to_dynamodb:main"
+ingest-departures = "project_cloud.departures.main:main"
+process-departures = "project_cloud.departures.process_s3_to_dynamodb:main"
 

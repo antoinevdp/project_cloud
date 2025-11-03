@@ -19,3 +19,10 @@ sam deploy --template-file packaged.yaml --stack-name <your-stack-name> --capabi
 Replace `<your-stack-name>` with the name you want to give to your CloudFormation stack.
 
 After deployment, the API Gateway endpoint URL will be displayed in the outputs.
+
+
+### Improvements
+
+redis to improve performance
+choose specific date for the api, not only the last processed data
+EC2 always on, find a way to schedule it

@@ -1,5 +1,6 @@
 from decimal import Decimal
 import boto3
+from datetime import datetime, time
 
 def put_item_to_dynamodb(dynamodb, table_name, item):
     table = dynamodb.Table(table_name)
@@ -57,3 +58,28 @@ def batch_put_items_to_dynamodb(dynamodb, table_name, items):
         print(f"Successfully batch put {len(items)} items to {table_name}")
     except Exception as e:
         print(f"Error batch putting items to DynamoDB: {e}")
+
+def get_all_items_by_date(dynamodb, table_name, date_str):
+    table = dynamodb.Table(table_name)
+    items = []
+    try:
+        scan_kwargs = {
+            'FilterExpression': boto3.dynamodb.conditions.Attr('ingestion_timestamp').begins_with(date_str)
+        }
+
+        done = False
+        start_key = None
+        while not done:
+            if start_key:
+                scan_kwargs['ExclusiveStartKey'] = start_key
+            
+            response = table.scan(**scan_kwargs)
+            items.extend(response.get('Items', []))
+            start_key = response.get('LastEvaluatedKey', None)
+            done = start_key is None
+
+        return items
+
+    except Exception as e:
+        print(f"Error getting items by date with scan: {e}")
+        return []

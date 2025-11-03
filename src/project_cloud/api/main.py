@@ -68,10 +68,13 @@ def lambda_handler(event, context):
 
         if path == '/parkings':
             table_name = "parkings"
-            type_value = "parking"
+            type_value = "parkings"
         elif path == '/traffic':
             table_name = "traffic"
             type_value = "traffic"
+        elif path == '/departures':
+            table_name = "departures"
+            type_value = "departures"
         else:
             print(f"Path not found: {path}")
             return {
