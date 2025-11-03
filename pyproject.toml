@@ -6,7 +6,22 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.40.54",
+    "boto3-stubs==1.40.54",
+    "geopy>=2.4.1",
+    "python-dotenv>=1.1.1",
     "requests>=2.32.5",
-    "python-dotenv>=1.0.0",
-    "dotenv>=0.9.9",
+    "streamlit>=1.51.0",
 ]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/project_cloud/__init__.py"
+
+[project.scripts]
+ingest-parking = "project_cloud.parking.main:main"
+process-parking = "project_cloud.parking.process_s3_to_dynamodb:main"
+ingest-traffic = "project_cloud.traffic.main:main"
+process-traffic= "project_cloud.traffic.process_s3_to_dynamodb:main"
+
